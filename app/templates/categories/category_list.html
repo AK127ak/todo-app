@@ -21,6 +21,7 @@
                 </div>
                 <p class="card-text text-muted">Создано: {{ category.created_at.strftime('%d.%m.%Y') }}</p>
                 <form action="{{ url_for('categories.delete_category', category_id=category.id) }}" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Удалить категорию? Задачи останутся без категории.')">
                         <i class="fas fa-trash"></i> Удалить
                     </button>
