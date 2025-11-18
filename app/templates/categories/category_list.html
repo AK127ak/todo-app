@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Категории</h1>
+    <a href="{{ url_for('categories.create_category') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Новая категория</a>
+</div>
+
+{% if categories %}
+<div class="row">
+    {% for category in categories %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">
+                        <span class="badge me-2" style="background-color: {{ category.color }}; width: 20px; height: 20px; display: inline-block;"></span>
+                        {{ category.name }}
+                    </h5>
+                    <span class="badge bg-secondary">{{ category.tasks.count() }} задач</span>
+                </div>
+                <p class="card-text text-muted">Создано: {{ category.created_at.strftime('%d.%m.%Y') }}</p>
+                <form action="{{ url_for('categories.delete_category', category_id=category.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Удалить категорию? Задачи останутся без категории.')">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info text-center">
+    <h4>Категории не найдены</h4>
+    <p><a href="{{ url_for('categories.create_category') }}">Создайте первую категорию</a></p>
+</div>
+{% endif %}
+{% endblock %}

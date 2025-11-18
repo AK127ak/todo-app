@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if current_user.is_authenticated %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Мои задачи</h1>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Новая задача</a>
+        </div>
+
+        {% if tasks %}
+        <div class="list-group">
+            {% for task in tasks %}
+            <div class="list-group-item list-group-item-action {{ 'task-completed' if task.completed }}">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                    <div class="form-check">
+                        <input class="form-check-input task-toggle" type="checkbox" data-task-id="{{ task.id }}" {{ 'checked' if task.completed }}>
+                        <label class="form-check-label {{ 'text-decoration-line-through' if task.completed }}">
+                            <strong>{{ task.title }}</strong>
+                            {% if task.category %}
+                            <span class="badge" style="background-color: {{ task.category.color }};">{{ task.category.name }}</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                </div>
+                
+                {% if task.description %}
+                <p class="mb-2 mt-2">{{ task.description }}</p>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted">
+                        {% if task.due_date %}До: {{ task.due_date.strftime('%d.%m.%Y %H:%M') }}{% endif %}
+                    </small>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                        <form action="{{ url_for('tasks.delete_task', task_id=task.id) }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Удалить задачу?')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            У вас пока нет задач. <a href="{{ url_for('tasks.create_task') }}">Создайте первую задачу!</a>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Добро пожаловать в To-Do List!</h1>
+            <p class="lead">Организуйте свои задачи, устанавливайте приоритеты и следите за выполнением.</p>
+            <hr class="my-4">
+            <p>Создавайте задачи, организуйте их по категориям и никогда не забывайте о важных делах.</p>
+            <div class="mt-4">
+                <a class="btn btn-primary btn-lg me-3" href="{{ url_for('auth.register') }}" role="button">Начать сейчас</a>
+                <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.login') }}" role="button">Войти</a>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Управление задачами</h5>
+                        <p class="card-text">Создавайте, редактируйте и удаляйте задачи с удобным интерфейсом.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-folder fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Категории</h5>
+                        <p class="card-text">Организуйте задачи по категориям для лучшего управления.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-flag fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Приоритеты</h5>
+                        <p class="card-text">Устанавливайте приоритеты задач для эффективного планирования.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Статистика</h5>
+            </div>
+            <div class="card-body">
+                {% set total_tasks = current_user.tasks.count() %}
+                {% set completed_tasks = current_user.tasks.filter_by(completed=True).count() %}
+                {% set active_tasks = total_tasks - completed_tasks %}
+                
+                <p>Всего задач: <strong>{{ total_tasks }}</strong></p>
+                <p>Выполнено: <strong>{{ completed_tasks }}</strong></p>
+                <p>Активных: <strong>{{ active_tasks }}</strong></p>
+                
+                {% if total_tasks > 0 %}
+                <div class="progress mt-3">
+                    <div class="progress-bar bg-success" style="width: {{ (completed_tasks / total_tasks * 100) }}%">
+                        {{ (completed_tasks / total_tasks * 100)|round|int }}%
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
