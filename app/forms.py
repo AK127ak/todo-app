@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField, BooleanField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional
 from app.models import User
+import re
 
 class LoginForm(FlaskForm):
     username = StringField('Имя пользователя', validators=[DataRequired()])
@@ -11,7 +12,7 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     username = StringField('Имя пользователя', validators=[DataRequired(), Length(min=3, max=64)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired(), Length(min=6)])
     password2 = PasswordField('Повторите пароль', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Зарегистрироваться')
@@ -22,6 +23,10 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Это имя пользователя уже занято.')
 
     def validate_email(self, email):
+        # Простая проверка формата email
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email.data):
+            raise ValidationError('Неверный формат email.')
+        
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Этот email уже используется.')
